@@ -1,0 +1,789 @@
+{
+  "@context": [
+    "https://geojson.org/geojson-ld/geojson-context.jsonld",
+    {
+      "@version": "1.1",
+      "wx": "https://api.weather.gov/ontology#",
+      "@vocab": "https://api.weather.gov/ontology#"
+    }
+  ],
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6674c9189f54a665610c1e85cfcf258dc6509645.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6674c9189f54a665610c1e85cfcf258dc6509645.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.6674c9189f54a665610c1e85cfcf258dc6509645.001.1",
+        "areaDesc": "Barber, KS; Comanche, KS",
+        "geocode": {
+          "SAME": [
+            "020007",
+            "020033"
+          ],
+          "UGC": [
+            "KSC007",
+            "KSC033"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/KSC007",
+          "https://api.weather.gov/zones/county/KSC033"
+        ],
+        "references": [],
+        "sent": "2026-04-01T17:08:00-05:00",
+        "effective": "2026-04-01T17:08:00-05:00",
+        "onset": "2026-04-01T17:08:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Dodge City KS",
+        "headline": "Tornado Watch issued April 1 at 5:08PM CDT until April 2 at 12:00AM CDT by NWS Dodge City KS",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN KANSAS THIS WATCH INCLUDES 2 COUNTIES\n\nIN SOUTH CENTRAL KANSAS\n\nBARBER                COMANCHE\n\nTHIS INCLUDES THE CITIES OF COLDWATER, KIOWA, LAKE COLDWATER,\nMEDICINE LODGE, AND PROTECTION.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNDDC"
+          ],
+          "WMOidentifier": [
+            "WWUS63 KDDC 012208"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KDDC.TO.A.0086.260401T2208Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    },
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.59afe0e42b6a49399c8eb618fb1daff074b91642.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.59afe0e42b6a49399c8eb618fb1daff074b91642.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.59afe0e42b6a49399c8eb618fb1daff074b91642.001.1",
+        "areaDesc": "Jack, TX; Montague, TX; Young, TX",
+        "geocode": {
+          "SAME": [
+            "048237",
+            "048337",
+            "048503"
+          ],
+          "UGC": [
+            "TXC237",
+            "TXC337",
+            "TXC503"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/TXC237",
+          "https://api.weather.gov/zones/county/TXC337",
+          "https://api.weather.gov/zones/county/TXC503"
+        ],
+        "references": [],
+        "sent": "2026-04-01T16:45:00-05:00",
+        "effective": "2026-04-01T16:45:00-05:00",
+        "onset": "2026-04-01T16:45:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Fort Worth TX",
+        "headline": "Tornado Watch issued April 1 at 4:45PM CDT until April 2 at 12:00AM CDT by NWS Fort Worth TX",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN TEXAS THIS WATCH INCLUDES 3 COUNTIES\n\nIN NORTH CENTRAL TEXAS\n\nJACK                  MONTAGUE              YOUNG\n\nTHIS INCLUDES THE CITIES OF BOWIE, GRAHAM, JACKSBORO, NOCONA,\nAND OLNEY.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNFWD"
+          ],
+          "WMOidentifier": [
+            "WWUS64 KFWD 012145"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KFWD.TO.A.0086.260401T2145Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    },
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fd7bf34634c3923f7220d97ffb14effdfccd71be.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fd7bf34634c3923f7220d97ffb14effdfccd71be.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.fd7bf34634c3923f7220d97ffb14effdfccd71be.001.1",
+        "areaDesc": "Haskell, TX; Throckmorton, TX",
+        "geocode": {
+          "SAME": [
+            "048207",
+            "048447"
+          ],
+          "UGC": [
+            "TXC207",
+            "TXC447"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/TXC207",
+          "https://api.weather.gov/zones/county/TXC447"
+        ],
+        "references": [],
+        "sent": "2026-04-01T16:44:00-05:00",
+        "effective": "2026-04-01T16:44:00-05:00",
+        "onset": "2026-04-01T16:44:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS San Angelo TX",
+        "headline": "Tornado Watch issued April 1 at 4:44PM CDT until April 2 at 12:00AM CDT by NWS San Angelo TX",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN TEXAS THIS WATCH INCLUDES 2 COUNTIES\n\nIN WEST CENTRAL TEXAS\n\nHASKELL               THROCKMORTON\n\nTHIS INCLUDES THE CITIES OF HASKELL, IRBY, THROCKMORTON,\nAND WOODSON.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNSJT"
+          ],
+          "WMOidentifier": [
+            "WWUS64 KSJT 012144"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KSJT.TO.A.0086.260401T2144Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    },
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e5ae0b4ffeba706f5c2ff14128cd5346ffd72218.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e5ae0b4ffeba706f5c2ff14128cd5346ffd72218.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.e5ae0b4ffeba706f5c2ff14128cd5346ffd72218.001.1",
+        "areaDesc": "Osage, OK; Pawnee, OK",
+        "geocode": {
+          "SAME": [
+            "040113",
+            "040117"
+          ],
+          "UGC": [
+            "OKC113",
+            "OKC117"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/OKC113",
+          "https://api.weather.gov/zones/county/OKC117"
+        ],
+        "references": [],
+        "sent": "2026-04-01T16:42:00-05:00",
+        "effective": "2026-04-01T16:42:00-05:00",
+        "onset": "2026-04-01T16:42:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Tulsa OK",
+        "headline": "Tornado Watch issued April 1 at 4:42PM CDT until April 2 at 12:00AM CDT by NWS Tulsa OK",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN OKLAHOMA THIS WATCH INCLUDES 2 COUNTIES\n\nIN NORTHEAST OKLAHOMA\n\nOSAGE                 PAWNEE\n\nTHIS INCLUDES THE CITIES OF PAWHUSKA AND PAWNEE.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNTSA"
+          ],
+          "WMOidentifier": [
+            "WWUS64 KTSA 012142"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KTSA.TO.A.0086.260401T2142Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    },
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0a75c9c54a6c1347a41bd2af91ecec1a59f0db1a.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0a75c9c54a6c1347a41bd2af91ecec1a59f0db1a.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.0a75c9c54a6c1347a41bd2af91ecec1a59f0db1a.001.1",
+        "areaDesc": "Alfalfa, OK; Beckham, OK; Blaine, OK; Caddo, OK; Canadian, OK; Carter, OK; Cleveland, OK; Comanche, OK; Cotton, OK; Custer, OK; Dewey, OK; Ellis, OK; Garfield, OK; Garvin, OK; Grady, OK; Grant, OK; Greer, OK; Harmon, OK; Harper, OK; Jackson, OK; Jefferson, OK; Kay, OK; Kingfisher, OK; Kiowa, OK; Lincoln, OK; Logan, OK; Love, OK; McClain, OK; Major, OK; Murray, OK; Noble, OK; Oklahoma, OK; Payne, OK; Pottawatomie, OK; Roger Mills, OK; Stephens, OK; Tillman, OK; Washita, OK; Woods, OK; Woodward, OK; Archer, TX; Baylor, TX; Clay, TX; Foard, TX; Hardeman, TX; Knox, TX; Wichita, TX; Wilbarger, TX",
+        "geocode": {
+          "SAME": [
+            "040003",
+            "040009",
+            "040011",
+            "040015",
+            "040017",
+            "040019",
+            "040027",
+            "040031",
+            "040033",
+            "040039",
+            "040043",
+            "040045",
+            "040047",
+            "040049",
+            "040051",
+            "040053",
+            "040055",
+            "040057",
+            "040059",
+            "040065",
+            "040067",
+            "040071",
+            "040073",
+            "040075",
+            "040081",
+            "040083",
+            "040085",
+            "040087",
+            "040093",
+            "040099",
+            "040103",
+            "040109",
+            "040119",
+            "040125",
+            "040129",
+            "040137",
+            "040141",
+            "040149",
+            "040151",
+            "040153",
+            "048009",
+            "048023",
+            "048077",
+            "048155",
+            "048197",
+            "048275",
+            "048485",
+            "048487"
+          ],
+          "UGC": [
+            "OKC003",
+            "OKC009",
+            "OKC011",
+            "OKC015",
+            "OKC017",
+            "OKC019",
+            "OKC027",
+            "OKC031",
+            "OKC033",
+            "OKC039",
+            "OKC043",
+            "OKC045",
+            "OKC047",
+            "OKC049",
+            "OKC051",
+            "OKC053",
+            "OKC055",
+            "OKC057",
+            "OKC059",
+            "OKC065",
+            "OKC067",
+            "OKC071",
+            "OKC073",
+            "OKC075",
+            "OKC081",
+            "OKC083",
+            "OKC085",
+            "OKC087",
+            "OKC093",
+            "OKC099",
+            "OKC103",
+            "OKC109",
+            "OKC119",
+            "OKC125",
+            "OKC129",
+            "OKC137",
+            "OKC141",
+            "OKC149",
+            "OKC151",
+            "OKC153",
+            "TXC009",
+            "TXC023",
+            "TXC077",
+            "TXC155",
+            "TXC197",
+            "TXC275",
+            "TXC485",
+            "TXC487"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/OKC003",
+          "https://api.weather.gov/zones/county/OKC009",
+          "https://api.weather.gov/zones/county/OKC011",
+          "https://api.weather.gov/zones/county/OKC015",
+          "https://api.weather.gov/zones/county/OKC017",
+          "https://api.weather.gov/zones/county/OKC019",
+          "https://api.weather.gov/zones/county/OKC027",
+          "https://api.weather.gov/zones/county/OKC031",
+          "https://api.weather.gov/zones/county/OKC033",
+          "https://api.weather.gov/zones/county/OKC039",
+          "https://api.weather.gov/zones/county/OKC043",
+          "https://api.weather.gov/zones/county/OKC045",
+          "https://api.weather.gov/zones/county/OKC047",
+          "https://api.weather.gov/zones/county/OKC049",
+          "https://api.weather.gov/zones/county/OKC051",
+          "https://api.weather.gov/zones/county/OKC053",
+          "https://api.weather.gov/zones/county/OKC055",
+          "https://api.weather.gov/zones/county/OKC057",
+          "https://api.weather.gov/zones/county/OKC059",
+          "https://api.weather.gov/zones/county/OKC065",
+          "https://api.weather.gov/zones/county/OKC067",
+          "https://api.weather.gov/zones/county/OKC071",
+          "https://api.weather.gov/zones/county/OKC073",
+          "https://api.weather.gov/zones/county/OKC075",
+          "https://api.weather.gov/zones/county/OKC081",
+          "https://api.weather.gov/zones/county/OKC083",
+          "https://api.weather.gov/zones/county/OKC085",
+          "https://api.weather.gov/zones/county/OKC087",
+          "https://api.weather.gov/zones/county/OKC093",
+          "https://api.weather.gov/zones/county/OKC099",
+          "https://api.weather.gov/zones/county/OKC103",
+          "https://api.weather.gov/zones/county/OKC109",
+          "https://api.weather.gov/zones/county/OKC119",
+          "https://api.weather.gov/zones/county/OKC125",
+          "https://api.weather.gov/zones/county/OKC129",
+          "https://api.weather.gov/zones/county/OKC137",
+          "https://api.weather.gov/zones/county/OKC141",
+          "https://api.weather.gov/zones/county/OKC149",
+          "https://api.weather.gov/zones/county/OKC151",
+          "https://api.weather.gov/zones/county/OKC153",
+          "https://api.weather.gov/zones/county/TXC009",
+          "https://api.weather.gov/zones/county/TXC023",
+          "https://api.weather.gov/zones/county/TXC077",
+          "https://api.weather.gov/zones/county/TXC155",
+          "https://api.weather.gov/zones/county/TXC197",
+          "https://api.weather.gov/zones/county/TXC275",
+          "https://api.weather.gov/zones/county/TXC485",
+          "https://api.weather.gov/zones/county/TXC487"
+        ],
+        "references": [],
+        "sent": "2026-04-01T16:42:00-05:00",
+        "effective": "2026-04-01T16:42:00-05:00",
+        "onset": "2026-04-01T16:42:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Norman OK",
+        "headline": "Tornado Watch issued April 1 at 4:42PM CDT until April 2 at 12:00AM CDT by NWS Norman OK",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN OKLAHOMA THIS WATCH INCLUDES 40 COUNTIES\n\nIN CENTRAL OKLAHOMA\n\nCANADIAN              CLEVELAND             GRADY\nKINGFISHER            LINCOLN               LOGAN\nMCCLAIN               OKLAHOMA              PAYNE\nPOTTAWATOMIE\n\nIN NORTHERN OKLAHOMA\n\nGARFIELD              GRANT                 KAY\nNOBLE\n\nIN NORTHWEST OKLAHOMA\n\nALFALFA               BLAINE                DEWEY\nELLIS                 HARPER                MAJOR\nWOODS                 WOODWARD\n\nIN SOUTHERN OKLAHOMA\n\nCARTER                GARVIN                JEFFERSON\nLOVE                  MURRAY                STEPHENS\n\nIN SOUTHWEST OKLAHOMA\n\nCADDO                 COMANCHE              COTTON\nGREER                 HARMON                JACKSON\nKIOWA                 TILLMAN\n\nIN WESTERN OKLAHOMA\n\nBECKHAM               CUSTER                ROGER MILLS\nWASHITA\n\nIN TEXAS THIS WATCH INCLUDES 8 COUNTIES\n\nIN NORTHERN TEXAS\n\nARCHER                BAYLOR                CLAY\nFOARD                 HARDEMAN              KNOX\nWICHITA               WILBARGER\n\nTHIS INCLUDES THE CITIES OF ALTUS, ALVA, ANADARKO, ARCHER CITY,\nARDMORE, ARNETT, BLACKWELL, BLANCHARD, BUFFALO, BURNS FLAT,\nCARMEN, CHANDLER, CHEROKEE, CHEYENNE, CHICKASHA, CLINTON, CONCHO,\nCORDELL, CROWELL, DAVENPORT, DAVIS, DUNCAN, EL RENO, ELK CITY,\nENID, FAIRVIEW, FARGO, FREDERICK, GAGE, GEARY, GRANITE, GUTHRIE,\nHAMMON, HELENA, HENNESSEY, HENRIETTA, HINTON, HOBART, HOLLIDAY,\nHOLLIS, KINGFISHER, KNOX CITY, LAKESIDE CITY, LAMONT, LAVERNE,\nLAWTON, LEEDEY, LINDSAY, MANGUM, MARIETTA, MEDFORD, MEEKER,\nMOORE, MUNDAY, MUSTANG, NEWCASTLE, NORMAN, OKARCHE, OKEENE,\nOKLAHOMA CITY, PAULS VALLEY, PERRY, PONCA CITY, POND CREEK,\nPRAGUE, PURCELL, QUANAH, RINGLING, RYAN, SAYRE, SCOTLAND,\nSEILING, SENTINEL, SEYMOUR, SHATTUCK, SHAWNEE, SHEPPARD AFB,\nSNYDER, STILLWATER, STROUD, SULPHUR, TALOGA, TEMPLE,\nTHACKERVILLE, TUTTLE, VERNON, VICI, WAKITA, WALTERS, WATONGA,\nWAURIKA, WEATHERFORD, WELLSTON, WICHITA FALLS, WOODWARD,\nWYNNEWOOD, AND YUKON.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNOUN"
+          ],
+          "WMOidentifier": [
+            "WWUS64 KOUN 012142"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KOUN.TO.A.0086.260401T2142Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    },
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4057c9ec8f8f865a4b3b20ee6059fa7ca0caec89.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4057c9ec8f8f865a4b3b20ee6059fa7ca0caec89.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.4057c9ec8f8f865a4b3b20ee6059fa7ca0caec89.001.1",
+        "areaDesc": "Childress, TX; Cottle, TX; King, TX; Stonewall, TX",
+        "geocode": {
+          "SAME": [
+            "048075",
+            "048101",
+            "048269",
+            "048433"
+          ],
+          "UGC": [
+            "TXC075",
+            "TXC101",
+            "TXC269",
+            "TXC433"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/TXC075",
+          "https://api.weather.gov/zones/county/TXC101",
+          "https://api.weather.gov/zones/county/TXC269",
+          "https://api.weather.gov/zones/county/TXC433"
+        ],
+        "references": [],
+        "sent": "2026-04-01T16:42:00-05:00",
+        "effective": "2026-04-01T16:42:00-05:00",
+        "onset": "2026-04-01T16:42:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Lubbock TX",
+        "headline": "Tornado Watch issued April 1 at 4:42PM CDT until April 2 at 12:00AM CDT by NWS Lubbock TX",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN TEXAS THIS WATCH INCLUDES 4 COUNTIES\n\nIN NORTHWEST TEXAS\n\nCOTTLE                KING                  STONEWALL\n\nIN THE PANHANDLE OF TEXAS\n\nCHILDRESS\n\nTHIS INCLUDES THE CITIES OF ASPERMONT, CEE VEE, CHILDRESS,\nDUMONT, GUTHRIE, KIRKLAND, OLD GLORY, AND PADUCAH.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNLUB"
+          ],
+          "WMOidentifier": [
+            "WWUS64 KLUB 012142"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KLUB.TO.A.0086.260401T2142Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    },
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2da2b92ca5b9354cacd032c3fe52bae6c9e12492.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2da2b92ca5b9354cacd032c3fe52bae6c9e12492.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.2da2b92ca5b9354cacd032c3fe52bae6c9e12492.001.1",
+        "areaDesc": "Collingsworth, TX",
+        "geocode": {
+          "SAME": [
+            "048087"
+          ],
+          "UGC": [
+            "TXC087"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/TXC087"
+        ],
+        "references": [],
+        "sent": "2026-04-01T16:41:00-05:00",
+        "effective": "2026-04-01T16:41:00-05:00",
+        "onset": "2026-04-01T16:41:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Amarillo TX",
+        "headline": "Tornado Watch issued April 1 at 4:41PM CDT until April 2 at 12:00AM CDT by NWS Amarillo TX",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN TEXAS THIS WATCH INCLUDES 1 COUNTY\n\nIN THE PANHANDLE OF TEXAS\n\nCOLLINGSWORTH\n\nTHIS INCLUDES THE CITIES OF DOZIER, LUTIE, SAMNORWOOD,\nAND WELLINGTON.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNAMA"
+          ],
+          "WMOidentifier": [
+            "WWUS64 KAMA 012141"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KAMA.TO.A.0086.260401T2141Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    },
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5f80387dcc40dd470ed43ae343455936cf5c8228.001.1",
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5f80387dcc40dd470ed43ae343455936cf5c8228.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.5f80387dcc40dd470ed43ae343455936cf5c8228.001.1",
+        "areaDesc": "Chautauqua, KS; Cowley, KS; Harper, KS; Sumner, KS",
+        "geocode": {
+          "SAME": [
+            "020019",
+            "020035",
+            "020077",
+            "020191"
+          ],
+          "UGC": [
+            "KSC019",
+            "KSC035",
+            "KSC077",
+            "KSC191"
+          ]
+        },
+        "affectedZones": [
+          "https://api.weather.gov/zones/county/KSC019",
+          "https://api.weather.gov/zones/county/KSC035",
+          "https://api.weather.gov/zones/county/KSC077",
+          "https://api.weather.gov/zones/county/KSC191"
+        ],
+        "references": [],
+        "sent": "2026-04-01T16:41:00-05:00",
+        "effective": "2026-04-01T16:41:00-05:00",
+        "onset": "2026-04-01T16:41:00-05:00",
+        "expires": "2026-04-02T00:00:00-05:00",
+        "ends": "2026-04-02T00:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Extreme",
+        "certainty": "Possible",
+        "urgency": "Future",
+        "event": "Tornado Watch",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Wichita KS",
+        "headline": "Tornado Watch issued April 1 at 4:41PM CDT until April 2 at 12:00AM CDT by NWS Wichita KS",
+        "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED TORNADO WATCH 86 IN\nEFFECT UNTIL MIDNIGHT CDT TONIGHT FOR THE FOLLOWING AREAS\n\nIN KANSAS THIS WATCH INCLUDES 4 COUNTIES\n\nIN SOUTH CENTRAL KANSAS\n\nCOWLEY                HARPER                SUMNER\n\nIN SOUTHEAST KANSAS\n\nCHAUTAUQUA\n\nTHIS INCLUDES THE CITIES OF ANTHONY, ARKANSAS CITY, ATTICA,\nCEDAR VALE, HARPER, SEDAN, WELLINGTON, AND WINFIELD.",
+        "instruction": null,
+        "response": "Monitor",
+        "parameters": {
+          "AWIPSidentifier": [
+            "WCNICT"
+          ],
+          "WMOidentifier": [
+            "WWUS63 KICT 012141"
+          ],
+          "BLOCKCHANNEL": [
+            "EAS",
+            "NWEM",
+            "CMAS"
+          ],
+          "EAS-ORG": [
+            "WXR"
+          ],
+          "VTEC": [
+            "/O.NEW.KICT.TO.A.0086.260401T2141Z-260402T0500Z/"
+          ],
+          "eventEndingTime": [
+            "2026-04-02T00:00:00-05:00"
+          ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+          "SAME": [
+            "TOA"
+          ],
+          "NationalWeatherService": [
+            "TOA"
+          ]
+        }
+      }
+    }
+  ],
+  "title": "Current Tornado Watch events",
+  "updated": "2026-04-01T22:08:43+00:00"
+}
