@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inclusive Tornado Tracking Map</title>
+    <meta name="description" content="An accessible tornado warning tracking map showing active and recent NWS tornado warnings with shape-encoded severity, audio sonification, and AI-powered explanations." />
+    <link rel="stylesheet" href="styles.css"/>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@300;400;500;600&display=swap');
+    </style>
+    <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/tiledwebmap.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+  </head>
+
+  <body>
+    <!-- Unified Header -->
+    <div id="unified-header">
+      <h1 id="storm-title">Tornado Warnings — April 2026</h1>
+      
+      <div id="button-row">
+        <!-- Filter Toggle Button -->
+        <button class="header-button" id="time-toggle" aria-label="Filter warnings by time" data-tooltip="Filter by time">
+          <img src="media/down2.svg" alt="Filter warnings" />
+        </button>
+        
+        <!-- About Button -->
+        <button class="header-button" id="about-button" aria-label="About this page" data-tooltip="About this page">
+          <img src="media/question.svg" alt="About" />
+        </button>
+        
+        <!-- Layer Toggle Button -->
+        <button class="header-button" id="layers-button" aria-label="Toggle map layers" data-tooltip="Toggle layers">
+          <img src="media/layers.png" alt="Layers" />
+        </button>
+      
+        <!-- POI Button -->
+        <button class="header-button" id="poi-button" aria-label="Open points of interest" data-tooltip="Add locations">
+          <img src="media/poi.png" alt="Points of Interest" />
+        </button>
+
+        <!-- Sonification Button -->
+        <button class="header-button" id="sonification-button" aria-label="Audio sonification" data-tooltip="Storm audio">
+          <img src="media/sonifylogo.png" alt="Sonification" style="filter: hue-rotate(30deg);" />
+        </button>
+        
+        <!-- What's Happening Button -->
+        <button class="header-button" id="whats-happening-button" aria-label="What's happening?" data-tooltip="What's happening?">
+          <img src="media/sparkles.svg" alt="What's happening?" style="filter: brightness(0) invert(1);" />
+        </button>
+      
+        <!-- Zoom Buttons -->
+        <button class="header-button zoom-button" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out">−</button>
+        <button class="header-button zoom-button" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In">+</button>
+      </div>
+
+      
+    </div>
+
+    <!-- Time/Filter Dropdown Wrapper -->
+    <div class="button-popup-wrapper" id="time-dropdown-wrapper">
+      <div id="time-dropdown" class="dropdown-menu popup" role="dialog" aria-labelledby="time-dropdown-title" tabindex="-1">
+        
+        <!-- Header matching other popups -->
+        <div class="time-dropdown-header">
+          <div class="time-dropdown-heading">
+            <img src="media/down2.svg" alt="" class="popup-icon">
+            <h3 id="time-dropdown-title">Warning Filter</h3>
+            <!-- Move info button here, next to title -->
+            <button class="time-info-button" id="windback-info-button" aria-label="About warning filter">
+              <img src="media/question.svg" alt="Help">
+            </button>
+          </div>
+          
+          <!-- Only close button on the right -->
+          <button class="close-popup" data-target="time-dropdown" aria-label="Close warning filter">
+            <img src="media/close.svg" alt="">
+          </button>
+        </div>
+        
+        <!-- Container for dropdown items (will be populated by JavaScript) -->
+        <div class="time-dropdown-items" id="time-dropdown-items">
+          <!-- Items added by map.js -->
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- About Popup -->
+<div class="button-popup-wrapper" id="about-popup-wrapper">
+  <div class="popup" id="about-popup" role="dialog" aria-labelledby="about-title" tabindex="-1">
+    <div class="popup-header">
+      <div class="popup-heading">
+        <img src="media/question.svg" alt="" class="popup-icon" width="18" height="18" style="filter: invert(1);"/>
+        <h2 class="popup-title" id="about-title">About</h2>
+      </div>
+      <button class="close-popup" aria-label="Close about">
+        <img src="media/close.svg" width="18" height="18" />
+      </button>
+    </div>
+    
+    <div class="popup-content">
+      <h3>Tornado Warnings — April 2026</h3>
+      <p><strong>This map</strong> displays NWS Tornado Warning alerts from April 2026, across the United States. Each polygon represents a warned area, shape-encoded by severity.</p>
+      <p>Using real-time NWS alert data as a case study, this tool explores how we can better communicate tornado risk, especially for <strong>underserved, rural, or visually impaired users</strong>.</p>
+      
+      <h3>About This Page</h3>
+      <p>This map was designed to improve <strong>accessibility</strong>, <strong>clarity</strong>, and <strong>usability</strong> during tornado events.</p>
+      
+      <h3>Features</h3>
+      <ul>
+        <li><strong>Shape-encoded severity:</strong> Each marker shape communicates alert tier</li>
+        <li><strong>Layer toggles:</strong> Show/hide warning polygons and centroid markers</li>
+        <li><strong>POI search:</strong> Enter addresses to see proximity to warnings</li>
+        <li><strong>Sonification:</strong> Hear tornado alerts as spatial audio</li>
+        <li><strong>Keyboard navigation:</strong> Fully accessible interface</li>
+      </ul>
+    </div>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- Layers Popup -->
+    <div class="button-popup-wrapper" id="layers-popup-wrapper">
+      <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/layers.png" alt="" class="popup-icon" width="18" height="18" />
+            <h2 id="layers-title" class="popup-title">Map Layers</h2>
+          </div>
+          <button class="close-popup" data-target="layers" aria-label="Close layers">
+            <img src="media/close.svg" alt="" width="18" height="18" />
+          </button>
+        </div>  
+        <div class="popup-content">
+          <label>
+            <input type="checkbox" class="layer-checkbox" data-layer="warnings">
+            Warning Polygons
+            <button class="info-button" data-info="warnings" aria-label="Definition: Warning Polygons">
+              <img src="media/question.svg" alt="Warnings definition" width="14" height="14" />
+            </button>
+          </label><br />
+          
+          <label>
+            <input type="checkbox" class="layer-checkbox" data-layer="markers">
+            Severity Markers
+            <button class="info-button" data-info="markers" aria-label="Definition: Severity Markers">
+              <img src="media/question.svg" alt="Markers definition" width="14" height="14" />
+            </button>
+          </label><br />
+
+          <div class="legend-suboption" data-parent="markers" style="display: none; padding-left: 20px; margin-top: 4px; margin-bottom: 8px;">
+            <label>
+              <input type="checkbox" class="legend-subcheckbox" data-target="markers" checked>
+              Show Legend
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POI Popup -->
+    <div class="button-popup-wrapper" id="poi-popup-wrapper">
+      <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/poi.png" alt="" class="popup-icon" width="15" height="18" />
+            <h2 id="poi-title" class="popup-title">Locations</h2>
+          </div>
+          <button class="close-popup" data-target="poi" aria-label="Close points of interest">
+            <img src="media/close.svg" alt="" width="18" height="18" />
+          </button>
+        </div>            
+        <div class="popup-content">
+          <p>Add a location to explore more details</p>
+          <label for="location-input" class="visually-hidden">Enter address</label>
+          <input type="text" id="location-input" placeholder="Enter an address" tabindex="0">
+          <button id="current-location" tabindex="0" aria-label="Use your current location">Use Current Location</button>
+          <button id="add-location" tabindex="0" aria-label="Add location">Add Location</button>
+          <ul id="location-list" class="location-list"></ul>
+          <div id="message" role="status" aria-live="polite" tabindex="0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sonification Popup -->
+    <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
+      <div class="popup" id="sonification-popup" role="dialog" aria-labelledby="sonification-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/sonifylogo.png" alt="" class="popup-icon" width="15" height="18" style="filter: hue-rotate(30deg);" />
+            <h2 id="sonification-title" class="popup-title">Alert Sonification</h2>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="sonification-info-button" aria-label="Learn more about sonification" style="background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+              <img src="media/question.svg" alt="Help" width="18" height="18" style="filter: invert(1);" />
+            </button>
+            <button class="close-popup" data-target="sonification" aria-label="Close sonification controls">
+              <img src="media/close.svg" alt="" width="18" height="18" />
+            </button>
+          </div>
+        </div>
+
+        <div class="popup-content">
+          <p style="font-size: 13px; margin-bottom: 12px;">Hear tornado alerts as spatial audio as you filter through warning events.</p>
+          
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 13px;">
+              <input type="checkbox" id="auto-sonify" checked> Auto-play when changing filter
+            </label>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <button id="play-current-point" style="width: 100%; padding: 8px; margin-bottom: 6px;">▶ Play Current Warning</button>
+            <button id="play-sequence" style="width: 100%; padding: 8px;">▶ Play All Warnings</button>
+          </div>
+
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #1a2947;">
+            <p style="font-size: 12px; color: #9fb3c8; margin-bottom: 8px; font-weight: 600;">Sound Layer Controls:</p>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+              <label style="font-size: 12px; color: #e0e0e0; display: flex; align-items: center;">
+                <input type="checkbox" id="toggle-strings" checked style="margin-right: 8px;">
+                <span>Severity → Alert Tone (Strings)</span>
+              </label>
+              <label style="font-size: 12px; color: #e0e0e0; display: flex; align-items: center;">
+                <input type="checkbox" id="toggle-woodwinds" checked style="margin-right: 8px;">
+                <span>Area Size → Intensity (Woodwinds)</span>
+              </label>
+              <label style="font-size: 12px; color: #e0e0e0; display: flex; align-items: center;">
+                <input type="checkbox" id="toggle-spatial" checked style="margin-right: 8px;">
+                <span>Position → Stereo Panning</span>
+              </label>
+              <label style="font-size: 12px; color: #e0e0e0; display: flex; align-items: center;">
+                <input type="checkbox" id="toggle-tts" checked style="margin-right: 8px;">
+                <span>Severity Announcements (Text-to-Speech)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sonification Info Modal -->
+    <div class="button-popup-wrapper" id="sonification-info-modal-wrapper">
+      <div class="popup" id="sonification-info-modal" role="dialog" aria-labelledby="sonification-info-title" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/sonifylogo.png" alt="" class="popup-icon" width="18" height="18" style="filter: hue-rotate(30deg);" />
+            <h2 class="popup-title" id="sonification-info-title">Alert Sonification</h2>
+          </div>
+          <button id="close-sonification-info" class="close-popup" aria-label="Close sonification information">
+            <img src="media/close.svg" alt="Close" width="18" height="18" />
+          </button>
+        </div>
+        
+        <div class="popup-content">
+          <p><strong>Sonification</strong> is the use of sound to represent data. This makes tornado warning information accessible to low-vision and visually impaired users, and provides an additional sensory layer for everyone.</p>
+          
+          <h3>Sound Mapping</h3>
+          <p>Three layers of sound work together to represent different aspects of the tornado alerts:</p>
+
+          <h3>🌪️ Severity → Alert Tone (Strings)</h3>
+          <ul>
+            <li><strong>Low severity (Radar Indicated):</strong> Slower, lower-pitched tones</li>
+            <li><strong>High severity (Confirmed/Observed):</strong> Rapid, high-pitched urgent tones</li>
+          </ul>
+
+          <h3>📐 Area Size → Woodwinds</h3>
+          <ul>
+            <li><strong>Small warning area:</strong> Quiet, sparse notes</li>
+            <li><strong>Large warning area:</strong> Dense, louder notes</li>
+          </ul>
+
+          <h3>📍 Geographic Location → Stereo Position</h3>
+          <ul>
+            <li><strong>Longitude (East/West):</strong> Sound pans across left and right speakers</li>
+          </ul>
+
+          <h3>Technical Details</h3>
+          <p><strong>Audio Engine:</strong> Tone.js (Web Audio API)</p>
+          <p><strong>Data Source:</strong> NWS Tornado Warnings (api.weather.gov)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explanation Popup -->
+    <div class="button-popup-wrapper" id="explain-popup-wrapper">
+      <div class="popup" id="explain-popup" role="dialog" aria-labelledby="explain-title" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/sparkles.svg" alt="" class="popup-icon" width="18" height="18" style="filter: brightness(0) invert(1);" />
+            <h2 class="popup-title" id="explain-title">What's Happening?</h2>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="explain-regenerate" class="explain-regenerate-button" aria-label="Regenerate explanation" title="Regenerate explanation">
+              ↻
+            </button>
+            <button class="close-popup" data-target="explain" aria-label="Close explanation">
+              <img src="media/close.svg" alt="" width="18" height="18" />
+            </button>
+          </div>
+        </div>
+        <div class="popup-content" id="explain-content">
+          <!-- Content will be populated by explain.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map-wrapper">
+      <div id="map-container" role="application" tabindex="0" aria-label="Interactive tornado warning map showing NWS tornado warning polygons across the United States. Use arrow keys to navigate."></div>
+    </div>
+
+    <!-- Severity Legend -->
+    <div class="layer-popup" id="popup-markers" tabindex="0" aria-label="Severity legend panel">
+      <h2 class="popup-title">
+        Severity Legend
+        <button class="info-button" id="markers-legend-info" aria-label="Severity explanation">
+          <img src="media/question.svg" alt="Legend info" width="14" height="14" style="filter: invert(1);" />
+        </button>
+      </h2>
+      <div class="legend-container">
+        <div class="legend-item"><span class="symbol circle" style="color: #FFA500;">●</span><span>Radar Indicated</span></div>
+        <div class="legend-item"><span class="symbol triangle" style="color: #FF4500;">▲</span><span>Observed</span></div>
+        <div class="legend-item"><span class="symbol square" style="color: #CC0000;">■</span><span>Confirmed</span></div>
+        <div class="legend-item"><span class="symbol pentagon" style="color: #8B0000;">⬟</span><span>PDS / Confirmed + Emergcy</span></div>
+      </div>
+    </div>
+
+    <script src="sonification.js"></script>
+    <script src="explain.js"></script>
+    <script src="map.js" defer></script>
+  </body>
+</html>
