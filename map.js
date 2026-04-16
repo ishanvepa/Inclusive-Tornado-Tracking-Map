@@ -39,7 +39,7 @@ function deriveSeverityTier(props) {
   ).toUpperCase();
 
   const headline = (props.headline || '').toUpperCase();
-  const desc     = (props.description || '').toUpperCase();
+  const desc = (props.description || '').toUpperCase();
 
   // PDS / Tornado Emergency → Tier 4
   if (
@@ -150,19 +150,19 @@ function parseWarnings(geojson) {
       const area = polygonArea(ring);
 
       warnings.push({
-        id:          props.id || feature.id || '',
-        areaDesc:    props.areaDesc || 'Unknown Area',
-        sent:        props.sent || '',
-        onset:       props.onset || props.effective || '',
-        expires:     props.expires || props.ends || '',
-        event:       props.event || 'Tornado Warning',
-        severity:    props.severity || 'Unknown',
-        certainty:   props.certainty || 'Unknown',
-        urgency:     props.urgency || 'Unknown',
-        headline:    props.headline || '',
+        id: props.id || feature.id || '',
+        areaDesc: props.areaDesc || 'Unknown Area',
+        sent: props.sent || '',
+        onset: props.onset || props.effective || '',
+        expires: props.expires || props.ends || '',
+        event: props.event || 'Tornado Warning',
+        severity: props.severity || 'Unknown',
+        certainty: props.certainty || 'Unknown',
+        urgency: props.urgency || 'Unknown',
+        headline: props.headline || '',
         description: props.description || '',
         instruction: props.instruction || '',
-        senderName:  props.senderName || '',
+        senderName: props.senderName || '',
         messageType: props.messageType || 'Alert',
         tier,
         centroid,
@@ -196,9 +196,9 @@ function groupWarningsByTime(warnings) {
     const key = isNaN(d.getTime())
       ? 'Unknown Time'
       : d.toLocaleString('en-US', {
-          month: 'short', day: 'numeric', year: 'numeric',
-          hour: 'numeric', hour12: true
-        });
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', hour12: true
+      });
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(i);
   }
@@ -225,6 +225,12 @@ function groupWarningsByTime(warnings) {
   let currentGroupKey = null;   // null = show all
   let currentGroupIndices = warnings.map((_, i) => i);  // start with all
 
+  // Start the view near actual warning data so polygons/markers are immediately visible.
+  const initialMapCenter = (warnings.length > 0)
+    ? [warnings[0].centroid.lon, warnings[0].centroid.lat]
+    : [-98.5795, 39.8283]; // fallback: roughly center of contiguous US
+  const initialMapZoom = (warnings.length > 0) ? 7 : 3.5;
+
   // =====================================================
   // Build the Highcharts map
   // =====================================================
@@ -236,6 +242,10 @@ function groupWarningsByTime(warnings) {
     chart: {
       reflow: false,
       panning: { enabled: true, type: 'xy' },
+    },
+    mapView: {
+      center: initialMapCenter,
+      zoom: initialMapZoom
     },
     title: { text: null },
     exporting: { enabled: false },
@@ -260,7 +270,8 @@ function groupWarningsByTime(warnings) {
         type: 'tiledwebmap',
         name: 'Basemap Tiles',
         provider: { type: 'OpenStreetMap' },
-        showInLegend: false
+        showInLegend: false,
+        zIndex: -1
       },
       // 2: Warning polygons (map series)
       {
@@ -268,19 +279,19 @@ function groupWarningsByTime(warnings) {
         name: 'Warning Polygons',
         type: 'map',
         visible: false,
-        zIndex: 1,
+        zIndex: 2,
         enableMouseTracking: true,
         joinBy: null,
-        color: 'rgba(255, 69, 0, 0.35)',
-        borderColor: '#FF4500',
-        borderWidth: 1.5,
+        color: 'rgba(255, 69, 0, 0.45)',
+        borderColor: '#000000',
+        borderWidth: 2.5,
         tooltip: {
           useHTML: true,
           hideDelay: 200,
           pointFormatter: function () {
             const w = this.custom && this.custom.warning;
             if (!w) return '';
-            const onset  = w.onset  ? new Date(w.onset).toLocaleString()  : '—';
+            const onset = w.onset ? new Date(w.onset).toLocaleString() : '—';
             const expire = w.expires ? new Date(w.expires).toLocaleString() : '—';
             return `
               <b>${w.event}</b><br/>
@@ -308,7 +319,7 @@ function groupWarningsByTime(warnings) {
           pointFormatter: function () {
             const w = this.custom && this.custom.warning;
             if (!w) return '';
-            const onset  = w.onset  ? new Date(w.onset).toLocaleString()  : '—';
+            const onset = w.onset ? new Date(w.onset).toLocaleString() : '—';
             const expire = w.expires ? new Date(w.expires).toLocaleString() : '—';
             return `
               <b>${w.event}</b><br/>
@@ -317,7 +328,7 @@ function groupWarningsByTime(warnings) {
               <b>Onset:</b> ${onset}<br/>
               <b>Expires:</b> ${expire}<br/>
               <b>Issued by:</b> ${w.senderName}<br/>
-              ${w.instruction ? `<br/><em style="font-size:11px;">${w.instruction.replace(/\n/g,'<br/>')}</em>` : ''}
+              ${w.instruction ? `<br/><em style="font-size:11px;">${w.instruction.replace(/\n/g, '<br/>')}</em>` : ''}
             `;
           }
         },
@@ -347,15 +358,56 @@ function groupWarningsByTime(warnings) {
   // Update series data based on selected group
   // =====================================================
   function buildPolygonData(indices) {
-    return indices.map(i => {
+    // Build explicit projected SVG paths. This avoids version-to-version
+    // differences in how Highcharts projects GeoJSON polygons.
+    const proj = chart?.mapView?.projection;
+
+    const project = (lon, lat) => {
+      if (proj && typeof proj.forward === 'function') {
+        const out = proj.forward([lon, lat]);
+        if (Array.isArray(out) && out.length >= 2) return out;
+        if (out && typeof out.x === 'number' && typeof out.y === 'number') return [out.x, out.y];
+      }
+      // Fallback: treat lon/lat as x/y (may not align with tiles, but keeps something on-screen)
+      return [lon, lat];
+    };
+
+    const ringToPath = (ring) => {
+      if (!Array.isArray(ring) || ring.length < 3) return null;
+
+      const closed = ring.slice();
+      const a = closed[0];
+      const b = closed[closed.length - 1];
+      if (!b || a[0] !== b[0] || a[1] !== b[1]) closed.push(a);
+
+      const path = [];
+      for (let i = 0; i < closed.length; i++) {
+        const pt = closed[i];
+        if (!pt || pt.length < 2) continue;
+        const [x, y] = project(pt[0], pt[1]);
+        path.push(i === 0 ? 'M' : 'L', x, y);
+      }
+      path.push('Z');
+      return path;
+    };
+
+    return indices.map((i) => {
       const w = warnings[i];
+      const base = tierToPolygonColor(w.tier);
+
+      const fill = (Highcharts.color)
+        ? Highcharts.color(base).setOpacity(0.45).get('rgba')
+        : 'rgba(255, 69, 0, 0.45)';
+
       return {
-        geometry: w.geometry,
-        color: tierToPolygonColor(w.tier) + '55',   // semi-transparent fill
-        borderColor: tierToPolygonColor(w.tier),
+        name: w.areaDesc,
+        path: ringToPath(w.ring),
+        color: fill,
+        borderColor: '#000000',
+        borderWidth: 2.5,
         custom: { warning: w }
       };
-    });
+    }).filter(p => Array.isArray(p.path) && p.path.length > 0);
   }
 
   function buildMarkerData(indices) {
@@ -380,10 +432,10 @@ function groupWarningsByTime(warnings) {
 
   function updateWarningSeries(indices) {
     const polygonSeries = chart.series.find(s => s.name === 'Warning Polygons');
-    const markerSeries  = chart.series.find(s => s.name === 'Severity Markers');
+    const markerSeries = chart.series.find(s => s.name === 'Severity Markers');
 
     if (polygonSeries) polygonSeries.setData(buildPolygonData(indices), false);
-    if (markerSeries)  markerSeries.setData(buildMarkerData(indices), false);
+    if (markerSeries) markerSeries.setData(buildMarkerData(indices), false);
     chart.redraw();
   }
 
@@ -483,7 +535,7 @@ function groupWarningsByTime(warnings) {
   // =====================================================
   function setupToggle(buttonId, popupId) {
     const button = document.getElementById(buttonId);
-    const popup  = document.getElementById(popupId);
+    const popup = document.getElementById(popupId);
     if (!button || !popup) return;
 
     const closeBtn = popup.querySelector('.close-popup');
@@ -557,18 +609,18 @@ function groupWarningsByTime(warnings) {
   // Sonification controls
   // =====================================================
   const autoSonifyCheckbox = document.getElementById('auto-sonify');
-  const playCurrentBtn     = document.getElementById('play-current-point');
-  const playSequenceBtn    = document.getElementById('play-sequence');
-  const toggleStrings      = document.getElementById('toggle-strings');
-  const toggleWoodwinds    = document.getElementById('toggle-woodwinds');
-  const toggleSpatial      = document.getElementById('toggle-spatial');
-  const toggleTTS          = document.getElementById('toggle-tts');
+  const playCurrentBtn = document.getElementById('play-current-point');
+  const playSequenceBtn = document.getElementById('play-sequence');
+  const toggleStrings = document.getElementById('toggle-strings');
+  const toggleWoodwinds = document.getElementById('toggle-woodwinds');
+  const toggleSpatial = document.getElementById('toggle-spatial');
+  const toggleTTS = document.getElementById('toggle-tts');
 
   if (autoSonifyCheckbox) autoSonifyCheckbox.addEventListener('change', function () { window.Sonification.setAutoPlay(this.checked); });
-  if (toggleStrings)      toggleStrings.addEventListener('change',      function () { window.Sonification.setStringsEnabled(this.checked); });
-  if (toggleWoodwinds)    toggleWoodwinds.addEventListener('change',    function () { window.Sonification.setWoodwindsEnabled(this.checked); });
-  if (toggleSpatial)      toggleSpatial.addEventListener('change',      function () { window.Sonification.setSpatialEnabled(this.checked); });
-  if (toggleTTS)          toggleTTS.addEventListener('change',          function () { window.Sonification.setTTSEnabled(this.checked); });
+  if (toggleStrings) toggleStrings.addEventListener('change', function () { window.Sonification.setStringsEnabled(this.checked); });
+  if (toggleWoodwinds) toggleWoodwinds.addEventListener('change', function () { window.Sonification.setWoodwindsEnabled(this.checked); });
+  if (toggleSpatial) toggleSpatial.addEventListener('change', function () { window.Sonification.setSpatialEnabled(this.checked); });
+  if (toggleTTS) toggleTTS.addEventListener('change', function () { window.Sonification.setTTSEnabled(this.checked); });
 
   if (playCurrentBtn) {
     playCurrentBtn.addEventListener('click', async () => {
@@ -596,8 +648,8 @@ function groupWarningsByTime(warnings) {
   }
 
   // Sonification info modal
-  const infoButton   = document.getElementById('sonification-info-button');
-  const infoModal    = document.getElementById('sonification-info-modal');
+  const infoButton = document.getElementById('sonification-info-button');
+  const infoModal = document.getElementById('sonification-info-modal');
   const closeInfoBtn = document.getElementById('close-sonification-info');
 
   if (infoButton && infoModal && closeInfoBtn) {
@@ -612,9 +664,9 @@ function groupWarningsByTime(warnings) {
     });
     document.addEventListener('click', (e) => {
       if (infoModal.style.display === 'block' &&
-          !infoModal.contains(e.target) &&
-          e.target !== infoButton &&
-          !infoButton.contains(e.target)) {
+        !infoModal.contains(e.target) &&
+        e.target !== infoButton &&
+        !infoButton.contains(e.target)) {
         infoModal.style.display = 'none';
       }
     });
@@ -640,19 +692,19 @@ function groupWarningsByTime(warnings) {
 
       if (layerName === 'markers') {
         const markerSeries = chart.series.find(s => s.name === 'Severity Markers');
-        const legend       = document.getElementById('popup-markers');
-        const legendCb     = document.querySelector('.legend-subcheckbox[data-target="markers"]');
-        const subOption    = document.querySelector('.legend-suboption[data-parent="markers"]');
+        const legend = document.getElementById('popup-markers');
+        const legendCb = document.querySelector('.legend-subcheckbox[data-target="markers"]');
+        const subOption = document.querySelector('.legend-suboption[data-parent="markers"]');
 
         if (markerSeries) markerSeries.setVisible(e.target.checked, false);
 
         if (e.target.checked) {
           if (legendCb) legendCb.checked = true;
-          if (legend)   legend.style.display = 'block';
+          if (legend) legend.style.display = 'block';
           if (subOption) subOption.style.display = 'block';
         } else {
           if (legendCb) legendCb.checked = false;
-          if (legend)   legend.style.display = 'none';
+          if (legend) legend.style.display = 'none';
           if (subOption) subOption.style.display = 'none';
         }
       }
@@ -665,7 +717,7 @@ function groupWarningsByTime(warnings) {
   document.querySelectorAll('.legend-subcheckbox').forEach(subbox => {
     subbox.addEventListener('change', e => {
       const target = e.target.dataset.target;
-      const popup  = document.getElementById(`popup-${target}`);
+      const popup = document.getElementById(`popup-${target}`);
       if (popup) popup.style.display = e.target.checked ? 'block' : 'none';
       updatePopupPositions();
     });
@@ -682,8 +734,8 @@ function groupWarningsByTime(warnings) {
   // =====================================================
   // POI — address geocoding
   // =====================================================
-  const addedLocations    = new Map();
-  let locationIdCounter   = 0;
+  const addedLocations = new Map();
+  let locationIdCounter = 0;
 
   document.getElementById('current-location').addEventListener('click', async () => {
     const userLocation = await new Promise(resolve => {
@@ -724,8 +776,8 @@ function groupWarningsByTime(warnings) {
 
   document.getElementById('add-location').addEventListener('click', async () => {
     const addressInput = document.getElementById('location-input');
-    const messageDiv   = document.getElementById('message');
-    const address      = addressInput.value.trim();
+    const messageDiv = document.getElementById('message');
+    const address = addressInput.value.trim();
 
     if (!address) { messageDiv.innerText = 'Please enter a valid address.'; return; }
 
@@ -740,7 +792,7 @@ function groupWarningsByTime(warnings) {
         if (geometry && typeof geometry.lat === 'number' && typeof geometry.lng === 'number') {
           const lat = geometry.lat;
           const lng = geometry.lng;
-          const id  = locationIdCounter++;
+          const id = locationIdCounter++;
           const userLocationsSeries = chart.series.find(s => s.name === 'User Locations');
 
           userLocationsSeries.addPoint({
@@ -776,8 +828,8 @@ function groupWarningsByTime(warnings) {
     list.innerHTML = '';
 
     addedLocations.forEach((info, id) => {
-      const li        = document.createElement('li');
-      const span      = document.createElement('span');
+      const li = document.createElement('li');
+      const span = document.createElement('span');
       const removeBtn = document.createElement('button');
 
       li.classList.add('location-item');
@@ -821,9 +873,9 @@ function groupWarningsByTime(warnings) {
   mapContainer.addEventListener('keydown', (e) => {
     let [lon, lat] = chart.mapView.center;
     switch (e.key) {
-      case 'ArrowUp':    chart.mapView.moveCenter([lon, lat + 2], true); break;
-      case 'ArrowDown':  chart.mapView.moveCenter([lon, lat - 2], true); break;
-      case 'ArrowLeft':  chart.mapView.moveCenter([lon - 2, lat], true); break;
+      case 'ArrowUp': chart.mapView.moveCenter([lon, lat + 2], true); break;
+      case 'ArrowDown': chart.mapView.moveCenter([lon, lat - 2], true); break;
+      case 'ArrowLeft': chart.mapView.moveCenter([lon - 2, lat], true); break;
       case 'ArrowRight': chart.mapView.moveCenter([lon + 2, lat], true); break;
       default: return;
     }
@@ -833,7 +885,7 @@ function groupWarningsByTime(warnings) {
   // =====================================================
   // Zoom controls
   // =====================================================
-  document.getElementById('zoom-in').addEventListener('click',  () => chart.mapView.zoomBy(1));
+  document.getElementById('zoom-in').addEventListener('click', () => chart.mapView.zoomBy(1));
   document.getElementById('zoom-out').addEventListener('click', () => chart.mapView.zoomBy(-1));
 
   // =====================================================
@@ -841,25 +893,25 @@ function groupWarningsByTime(warnings) {
   // =====================================================
   setTimeout(() => {
     const warningsCb = document.querySelector('.layer-checkbox[data-layer="warnings"]');
-    const markersCb  = document.querySelector('.layer-checkbox[data-layer="markers"]');
+    const markersCb = document.querySelector('.layer-checkbox[data-layer="markers"]');
     if (!warningsCb || !markersCb) return;
 
     warningsCb.checked = true;
-    markersCb.checked  = true;
+    markersCb.checked = true;
 
     // Set data first before making visible
     updateWarningSeries(currentGroupIndices);
 
-    const polySeries   = chart.series.find(s => s.name === 'Warning Polygons');
+    const polySeries = chart.series.find(s => s.name === 'Warning Polygons');
     const markerSeries = chart.series.find(s => s.name === 'Severity Markers');
-    if (polySeries)   polySeries.setVisible(true, false);
+    if (polySeries) polySeries.setVisible(true, false);
     if (markerSeries) markerSeries.setVisible(true, false);
 
-    const legendCb  = document.querySelector('.legend-subcheckbox[data-target="markers"]');
+    const legendCb = document.querySelector('.legend-subcheckbox[data-target="markers"]');
     const subOption = document.querySelector('.legend-suboption[data-parent="markers"]');
     const legendPopup = document.getElementById('popup-markers');
-    if (legendCb)    legendCb.checked = true;
-    if (subOption)   subOption.style.display = 'block';
+    if (legendCb) legendCb.checked = true;
+    if (subOption) subOption.style.display = 'block';
     if (legendPopup) legendPopup.style.display = 'block';
 
     updatePopupPositions();
@@ -906,7 +958,7 @@ function groupWarningsByTime(warnings) {
 
       const rect = btn.getBoundingClientRect();
       popup.style.left = `${rect.right + 8}px`;
-      popup.style.top  = `${rect.top - 4 + window.scrollY}px`;
+      popup.style.top = `${rect.top - 4 + window.scrollY}px`;
 
       document.body.appendChild(popup);
       requestAnimationFrame(() => popup.style.opacity = '1');
@@ -973,10 +1025,10 @@ function groupWarningsByTime(warnings) {
       const legendBox = document.getElementById('popup-markers');
       const rect = legendBox.getBoundingClientRect();
       const popupHeight = popup.offsetHeight;
-      const popupTop  = Math.max(rect.top + window.scrollY - popupHeight - 20, 20);
+      const popupTop = Math.max(rect.top + window.scrollY - popupHeight - 20, 20);
       const popupLeft = rect.left + window.scrollX + rect.width / 2 - popup.offsetWidth / 2;
 
-      popup.style.top  = `${popupTop}px`;
+      popup.style.top = `${popupTop}px`;
       popup.style.left = `${popupLeft}px`;
 
       requestAnimationFrame(() => popup.style.opacity = '1');
@@ -1021,7 +1073,7 @@ function groupWarningsByTime(warnings) {
 
       const rect = windbackInfoButton.getBoundingClientRect();
       popup.style.left = `${rect.right + 8}px`;
-      popup.style.top  = `${rect.top - 4 + window.scrollY}px`;
+      popup.style.top = `${rect.top - 4 + window.scrollY}px`;
 
       document.body.appendChild(popup);
       requestAnimationFrame(() => popup.style.opacity = '1');
