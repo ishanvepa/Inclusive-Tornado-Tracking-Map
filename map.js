@@ -2,24 +2,7 @@
 // Inclusive Tornado Tracking Map — map.js
 // =====================================================
 
-// Custom symbol: pentagon (Tier 4 — PDS / Confirmed Emergency)
-Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
-  const centerX = x + w / 2;
-  const centerY = y + h / 2;
-  const scale = 1.25;
-  const r = Math.min(w, h) / 2 * scale;
-  const angle = Math.PI * 2 / 5;
-  const path = [];
 
-  for (let i = 0; i < 5; i++) {
-    const theta = i * angle - Math.PI / 2;
-    const px = centerX + r * Math.cos(theta);
-    const py = centerY + r * Math.sin(theta);
-    path.push(i === 0 ? 'M' : 'L', px, py);
-  }
-  path.push('Z');
-  return path;
-};
 
 // =====================================================
 // Severity Helpers
@@ -28,10 +11,10 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 /**
  * Derive a severity tier (1–4) from NWS alert properties.
  *
- * Tier 1 (circle, orange)   — Radar Indicated
- * Tier 2 (triangle, red)    — Observed by spotters / trained observers
- * Tier 3 (square, dark red) — Radar Confirmed (explicit tornadoDetection=CONFIRMED)
- * Tier 4 (pentagon, maroon) — PDS (Particularly Dangerous Situation) or Tornado Emergency
+ * Tier 1 — Radar Indicated
+ * Tier 2 — Observed by spotters / trained observers
+ * Tier 3 — Radar Confirmed (explicit tornadoDetection=CONFIRMED)
+ * Tier 4 — PDS (Particularly Dangerous Situation) or Tornado Emergency
  */
 function deriveSeverityTier(props) {
   const detection = (
@@ -70,20 +53,6 @@ function deriveSeverityTier(props) {
   return 1;
 }
 
-function tierToSymbol(tier) {
-  if (tier >= 4) return 'pentagon';
-  if (tier === 3) return 'square';
-  if (tier === 2) return 'triangle';
-  return 'circle';
-}
-
-function tierToColor(tier) {
-  if (tier >= 4) return '#8B0000';  // maroon
-  if (tier === 3) return '#CC0000';  // dark red
-  if (tier === 2) return '#FF4500';  // orange-red
-  return '#FFA500';                  // orange
-}
-
 function tierToPolygonColor(tier) {
   if (tier >= 4) return '#8B0000';
   if (tier === 3) return '#CC0000';
@@ -110,18 +79,6 @@ function polygonCentroid(ring) {
   return { lon: sumLon / n, lat: sumLat / n };
 }
 
-/**
- * Approximate area of a polygon ring (in degree² units — only used for
- * relative comparison to drive sonification intensity).
- */
-function polygonArea(ring) {
-  let area = 0;
-  const n = ring.length;
-  for (let i = 0, j = n - 1; i < n; j = i++) {
-    area += (ring[j][0] + ring[i][0]) * (ring[j][1] - ring[i][1]);
-  }
-  return Math.abs(area) / 2;
-}
 
 // =====================================================
 // Parse GeoJSON into a flat list of warning objects
@@ -147,7 +104,6 @@ function parseWarnings(geojson) {
 
     for (const ring of geometryCoords) {
       const centroid = polygonCentroid(ring);
-      const area = polygonArea(ring);
 
       warnings.push({
         id: props.id || feature.id || '',
@@ -166,7 +122,6 @@ function parseWarnings(geojson) {
         messageType: props.messageType || 'Alert',
         tier,
         centroid,
-        area,
         ring,             // raw polygon ring for rendering
         geometry: feature.geometry,
       });
@@ -214,7 +169,11 @@ function groupWarningsByTime(warnings) {
   const warnings = parseWarnings(geojson);
   const timeGroups = groupWarningsByTime(warnings);
 
+  // Fetch US TopoJSON — used as an invisible anchor series so Highcharts has
+  // a geographic reference frame for drag-to-pan. Without a mapData series,
+  // Highcharts cannot translate mouse drag deltas into coordinate offsets.
   const usa = await fetch('https://code.highcharts.com/mapdata/countries/us/us-all.topo.json').then(r => r.json());
+
 
   // Dropdown state
   const timeDropdown = document.getElementById('time-dropdown');
@@ -245,7 +204,7 @@ function groupWarningsByTime(warnings) {
     },
     mapView: {
       center: initialMapCenter,
-      zoom: initialMapZoom
+      zoom: initialMapZoom,
     },
     title: { text: null },
     exporting: { enabled: false },
@@ -257,15 +216,20 @@ function groupWarningsByTime(warnings) {
       style: { maxWidth: '300px' }
     },
     series: [
-      // 0: choropleth base map (US states)
+      // 0: Invisible anchor layer — provides the geographic reference frame
+      // that Highcharts needs to convert mouse drag deltas into coordinate
+      // offsets. Fully transparent; the OSM tile layer is what you see.
       {
         name: 'Base map',
-        nullColor: '#acb',
-        legendSymbolColor: '#acb',
-        borderColor: '#888',
-        mapData: usa
+        mapData: usa,
+        nullColor: 'transparent',
+        borderColor: 'transparent',
+        borderWidth: 0,
+        enableMouseTracking: false,
+        showInLegend: false,
+        accessibility: { enabled: false }
       },
-      // 1: OpenStreetMap tiles
+      // 1: OpenStreetMap tiles (visible base layer)
       {
         type: 'tiledwebmap',
         name: 'Basemap Tiles',
@@ -305,36 +269,7 @@ function groupWarningsByTime(warnings) {
         },
         data: []
       },
-      // 3: Centroid markers (mappoint series)
-      {
-        id: 'warning-markers',
-        name: 'Severity Markers',
-        type: 'mappoint',
-        visible: false,
-        zIndex: 3,
-        dataLabels: { enabled: false },
-        tooltip: {
-          useHTML: true,
-          hideDelay: 0,
-          pointFormatter: function () {
-            const w = this.custom && this.custom.warning;
-            if (!w) return '';
-            const onset = w.onset ? new Date(w.onset).toLocaleString() : '—';
-            const expire = w.expires ? new Date(w.expires).toLocaleString() : '—';
-            return `
-              <b>${w.event}</b><br/>
-              <b>Area:</b> ${w.areaDesc}<br/>
-              <b>Severity:</b> <span style="color:${tierToColor(w.tier)}">■</span> ${tierToLabel(w.tier)}<br/>
-              <b>Onset:</b> ${onset}<br/>
-              <b>Expires:</b> ${expire}<br/>
-              <b>Issued by:</b> ${w.senderName}<br/>
-              ${w.instruction ? `<br/><em style="font-size:11px;">${w.instruction.replace(/\n/g, '<br/>')}</em>` : ''}
-            `;
-          }
-        },
-        data: []
-      },
-      // 4: User-added POI markers
+      // 3: User-added POI markers
       {
         id: 'user-locations',
         name: 'User Locations',
@@ -358,84 +293,33 @@ function groupWarningsByTime(warnings) {
   // Update series data based on selected group
   // =====================================================
   function buildPolygonData(indices) {
-    // Build explicit projected SVG paths. This avoids version-to-version
-    // differences in how Highcharts projects GeoJSON polygons.
-    const proj = chart?.mapView?.projection;
-
-    const project = (lon, lat) => {
-      if (proj && typeof proj.forward === 'function') {
-        const out = proj.forward([lon, lat]);
-        if (Array.isArray(out) && out.length >= 2) return out;
-        if (out && typeof out.x === 'number' && typeof out.y === 'number') return [out.x, out.y];
-      }
-      // Fallback: treat lon/lat as x/y (may not align with tiles, but keeps something on-screen)
-      return [lon, lat];
-    };
-
-    const ringToPath = (ring) => {
-      if (!Array.isArray(ring) || ring.length < 3) return null;
-
-      const closed = ring.slice();
-      const a = closed[0];
-      const b = closed[closed.length - 1];
-      if (!b || a[0] !== b[0] || a[1] !== b[1]) closed.push(a);
-
-      const path = [];
-      for (let i = 0; i < closed.length; i++) {
-        const pt = closed[i];
-        if (!pt || pt.length < 2) continue;
-        const [x, y] = project(pt[0], pt[1]);
-        path.push(i === 0 ? 'M' : 'L', x, y);
-      }
-      path.push('Z');
-      return path;
-    };
-
+    // Pass the raw GeoJSON geometry directly so Highcharts re-projects it on
+    // every render/zoom/pan. The old approach manually called proj.forward()
+    // to build a static SVG path — those coordinates were only valid at one
+    // specific zoom level and caused polygons to disappear or misalign after
+    // any map movement.
     return indices.map((i) => {
       const w = warnings[i];
       const base = tierToPolygonColor(w.tier);
 
-      const fill = (Highcharts.color)
+      const fill = Highcharts.color
         ? Highcharts.color(base).setOpacity(0.45).get('rgba')
         : 'rgba(255, 69, 0, 0.45)';
 
       return {
         name: w.areaDesc,
-        path: ringToPath(w.ring),
+        geometry: w.geometry,   // let Highcharts handle projection
         color: fill,
         borderColor: '#000000',
         borderWidth: 2.5,
         custom: { warning: w }
       };
-    }).filter(p => Array.isArray(p.path) && p.path.length > 0);
-  }
-
-  function buildMarkerData(indices) {
-    return indices.map(i => {
-      const w = warnings[i];
-      const { lon, lat } = w.centroid;
-      return {
-        lon,
-        lat,
-        name: w.areaDesc,
-        marker: {
-          symbol: tierToSymbol(w.tier),
-          fillColor: tierToColor(w.tier),
-          lineColor: '#000',
-          lineWidth: 1,
-          radius: 10
-        },
-        custom: { warning: w }
-      };
-    });
+    }).filter(p => p.geometry != null);
   }
 
   function updateWarningSeries(indices) {
     const polygonSeries = chart.series.find(s => s.name === 'Warning Polygons');
-    const markerSeries = chart.series.find(s => s.name === 'Severity Markers');
-
     if (polygonSeries) polygonSeries.setData(buildPolygonData(indices), false);
-    if (markerSeries) markerSeries.setData(buildMarkerData(indices), false);
     chart.redraw();
   }
 
@@ -450,17 +334,11 @@ function groupWarningsByTime(warnings) {
   allItem.dataset.key = '__all__';
   allItem.textContent = `All Warnings (${warnings.length})`;
   allItem.setAttribute('aria-label', `Show all ${warnings.length} tornado warnings`);
-  allItem.addEventListener('click', async () => {
+  allItem.addEventListener('click', () => {
     currentGroupKey = null;
     currentGroupIndices = warnings.map((_, i) => i);
     updateWarningSeries(currentGroupIndices);
     timeDropdown.style.display = 'none';
-
-    if (window.Sonification && window.Sonification.getAutoPlay() && warnings.length > 0) {
-      const bestWarning = warnings.reduce((a, b) => b.tier > a.tier ? b : a, warnings[0]);
-      await window.Sonification.playPoint(bestWarning, 0.8);
-    }
-    updateExplain(null);
   });
   timeDropdownItems.appendChild(allItem);
 
@@ -473,62 +351,25 @@ function groupWarningsByTime(warnings) {
     item.dataset.key = key;
 
     const maxTier = Math.max(...indices.map(i => warnings[i].tier));
-    const tierBadge = `<span style="color:${tierToColor(maxTier)}">■</span> `;
+    const tierBadge = `<span style="color:${tierToPolygonColor(maxTier)}">■</span> `;
     item.innerHTML = `${tierBadge}${key} <small style="opacity:0.65">(${indices.length})</small>`;
     item.setAttribute('aria-label', `Select time group ${key}, ${indices.length} warning(s)`);
 
-    const handleSelect = async () => {
+    const handleSelect = () => {
       currentGroupKey = key;
       currentGroupIndices = indices;
       updateWarningSeries(currentGroupIndices);
       timeDropdown.style.display = 'none';
-
-      if (window.Sonification && window.Sonification.getAutoPlay() && indices.length > 0) {
-        // Play the highest-tier warning in this group
-        const bestIdx = indices.reduce((a, b) => warnings[b].tier > warnings[a].tier ? b : a, indices[0]);
-        await window.Sonification.playPoint(warnings[bestIdx], 0.8);
-      }
-
-      if (indices.length > 0) {
-        const w = warnings[indices[0]];
-        updateExplain(w, indices);
-      }
     };
 
     item.addEventListener('click', handleSelect);
-    item.addEventListener('keydown', async (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); await handleSelect(); }
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); }
     });
 
     timeDropdownItems.appendChild(item);
   });
 
-  // =====================================================
-  // Explain module integration
-  // =====================================================
-  function updateExplain(warning, groupIndices) {
-    if (!window.Explain) return;
-    if (!warning) {
-      window.Explain.toggle();
-      return;
-    }
-    const userData = getUserLocations();
-    const explainData = {
-      current: warning,
-      previous: null,
-      allPoints: groupIndices ? groupIndices.map(i => warnings[i]) : warnings,
-      currentIndex: 0,
-      stormName: `Tornado Warning — ${warning.areaDesc}`,
-      userLocations: userData
-    };
-    window.Explain.update(explainData);
-  }
-
-  function getUserLocations() {
-    const series = chart.series.find(s => s.name === 'User Locations');
-    if (!series) return [];
-    return series.points.map(p => ({ name: p.name || 'Unknown Location', lat: p.lat, lon: p.lon }));
-  }
 
   // =====================================================
   // Button/popup toggle setup
@@ -571,112 +412,8 @@ function groupWarningsByTime(warnings) {
   setupToggle('about-button', 'about-popup');
   setupToggle('layers-button', 'layers-popup');
   setupToggle('poi-button', 'poi-popup');
-  setupToggle('sonification-button', 'sonification-popup');
 
-  // What's happening button
-  const whatsHappeningButton = document.getElementById('whats-happening-button');
-  const explainPopup = document.getElementById('explain-popup');
 
-  if (whatsHappeningButton && explainPopup) {
-    whatsHappeningButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isVisible = explainPopup.style.display === 'block';
-
-      document.querySelectorAll('.popup').forEach(p => p.style.display = 'none');
-      document.querySelectorAll('.dropdown-menu').forEach(d => d.style.display = 'none');
-      document.querySelectorAll('.header-button').forEach(btn => btn.classList.remove('active'));
-
-      if (!isVisible) {
-        explainPopup.style.display = 'block';
-        whatsHappeningButton.classList.add('active');
-        if (window.Explain) window.Explain.toggle();
-      } else {
-        whatsHappeningButton.blur();
-      }
-    });
-
-    const explainCloseBtn = explainPopup.querySelector('.close-popup');
-    if (explainCloseBtn) {
-      explainCloseBtn.addEventListener('click', () => {
-        explainPopup.style.display = 'none';
-        whatsHappeningButton.classList.remove('active');
-        whatsHappeningButton.blur();
-      });
-    }
-  }
-
-  // =====================================================
-  // Sonification controls
-  // =====================================================
-  const autoSonifyCheckbox = document.getElementById('auto-sonify');
-  const playCurrentBtn = document.getElementById('play-current-point');
-  const playSequenceBtn = document.getElementById('play-sequence');
-  const toggleStrings = document.getElementById('toggle-strings');
-  const toggleWoodwinds = document.getElementById('toggle-woodwinds');
-  const toggleSpatial = document.getElementById('toggle-spatial');
-  const toggleTTS = document.getElementById('toggle-tts');
-
-  if (autoSonifyCheckbox) autoSonifyCheckbox.addEventListener('change', function () { window.Sonification.setAutoPlay(this.checked); });
-  if (toggleStrings) toggleStrings.addEventListener('change', function () { window.Sonification.setStringsEnabled(this.checked); });
-  if (toggleWoodwinds) toggleWoodwinds.addEventListener('change', function () { window.Sonification.setWoodwindsEnabled(this.checked); });
-  if (toggleSpatial) toggleSpatial.addEventListener('change', function () { window.Sonification.setSpatialEnabled(this.checked); });
-  if (toggleTTS) toggleTTS.addEventListener('change', function () { window.Sonification.setTTSEnabled(this.checked); });
-
-  if (playCurrentBtn) {
-    playCurrentBtn.addEventListener('click', async () => {
-      if (currentGroupIndices.length > 0) {
-        const bestIdx = currentGroupIndices.reduce((a, b) =>
-          warnings[b].tier > warnings[a].tier ? b : a, currentGroupIndices[0]);
-        await window.Sonification.playPoint(warnings[bestIdx], 0.8);
-      }
-    });
-  }
-
-  if (playSequenceBtn) {
-    playSequenceBtn.addEventListener('click', async function () {
-      if (window.Sonification.isPlaying()) {
-        window.Sonification.stop();
-        this.textContent = '▶ Play All Warnings';
-      } else {
-        this.textContent = '⏹ Stop Sequence';
-        const seq = currentGroupIndices.map(i => warnings[i]);
-        await window.Sonification.playSequence(seq, 800, () => {
-          playSequenceBtn.textContent = '▶ Play All Warnings';
-        });
-      }
-    });
-  }
-
-  // Sonification info modal
-  const infoButton = document.getElementById('sonification-info-button');
-  const infoModal = document.getElementById('sonification-info-modal');
-  const closeInfoBtn = document.getElementById('close-sonification-info');
-
-  if (infoButton && infoModal && closeInfoBtn) {
-    infoButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      infoModal.style.display = 'block';
-    });
-    closeInfoBtn.addEventListener('click', () => {
-      infoModal.style.display = 'none';
-      infoButton.focus();
-    });
-    document.addEventListener('click', (e) => {
-      if (infoModal.style.display === 'block' &&
-        !infoModal.contains(e.target) &&
-        e.target !== infoButton &&
-        !infoButton.contains(e.target)) {
-        infoModal.style.display = 'none';
-      }
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && infoModal.style.display === 'block') {
-        infoModal.style.display = 'none';
-        infoButton.focus();
-      }
-    });
-  }
 
   // =====================================================
   // Layer toggle logic
@@ -690,38 +427,13 @@ function groupWarningsByTime(warnings) {
         if (polySeries) polySeries.setVisible(e.target.checked, false);
       }
 
-      if (layerName === 'markers') {
-        const markerSeries = chart.series.find(s => s.name === 'Severity Markers');
-        const legend = document.getElementById('popup-markers');
-        const legendCb = document.querySelector('.legend-subcheckbox[data-target="markers"]');
-        const subOption = document.querySelector('.legend-suboption[data-parent="markers"]');
-
-        if (markerSeries) markerSeries.setVisible(e.target.checked, false);
-
-        if (e.target.checked) {
-          if (legendCb) legendCb.checked = true;
-          if (legend) legend.style.display = 'block';
-          if (subOption) subOption.style.display = 'block';
-        } else {
-          if (legendCb) legendCb.checked = false;
-          if (legend) legend.style.display = 'none';
-          if (subOption) subOption.style.display = 'none';
-        }
-      }
 
       chart.redraw();
       updatePopupPositions();
     });
   });
 
-  document.querySelectorAll('.legend-subcheckbox').forEach(subbox => {
-    subbox.addEventListener('change', e => {
-      const target = e.target.dataset.target;
-      const popup = document.getElementById(`popup-${target}`);
-      if (popup) popup.style.display = e.target.checked ? 'block' : 'none';
-      updatePopupPositions();
-    });
-  });
+
 
   function updatePopupPositions() {
     const visiblePopups = Array.from(document.querySelectorAll('.layer-popup')).filter(p => p.style.display === 'block');
@@ -893,26 +605,15 @@ function groupWarningsByTime(warnings) {
   // =====================================================
   setTimeout(() => {
     const warningsCb = document.querySelector('.layer-checkbox[data-layer="warnings"]');
-    const markersCb = document.querySelector('.layer-checkbox[data-layer="markers"]');
-    if (!warningsCb || !markersCb) return;
+    if (!warningsCb) return;
 
     warningsCb.checked = true;
-    markersCb.checked = true;
 
     // Set data first before making visible
     updateWarningSeries(currentGroupIndices);
 
     const polySeries = chart.series.find(s => s.name === 'Warning Polygons');
-    const markerSeries = chart.series.find(s => s.name === 'Severity Markers');
     if (polySeries) polySeries.setVisible(true, false);
-    if (markerSeries) markerSeries.setVisible(true, false);
-
-    const legendCb = document.querySelector('.legend-subcheckbox[data-target="markers"]');
-    const subOption = document.querySelector('.legend-suboption[data-parent="markers"]');
-    const legendPopup = document.getElementById('popup-markers');
-    if (legendCb) legendCb.checked = true;
-    if (subOption) subOption.style.display = 'block';
-    if (legendPopup) legendPopup.style.display = 'block';
 
     updatePopupPositions();
     chart.redraw();
@@ -929,8 +630,6 @@ function groupWarningsByTime(warnings) {
       let message = '';
       if (layer === 'warnings') {
         message = 'Warning Polygons show the exact geographic area placed under a Tornado Warning by the National Weather Service.';
-      } else if (layer === 'markers') {
-        message = 'Severity Markers are placed at the centroid of each warning polygon. Their shape encodes severity: circle = Radar Indicated, triangle = Observed, square = Confirmed, pentagon = PDS/Emergency.';
       }
 
       if (!message) return;
