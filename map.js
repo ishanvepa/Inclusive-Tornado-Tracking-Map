@@ -68,6 +68,20 @@ function tierToLabel(tier) {
 }
 
 /**
+ * Helper function to escape HTML
+ */
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+/**
  * Compute the centroid of a polygon ring (array of [lon, lat] pairs).
  */
 function polygonCentroid(ring) {
@@ -183,6 +197,7 @@ function groupWarningsByTime(warnings) {
   // Track which warnings are currently shown
   let currentGroupKey = null;   // null = show all
   let currentGroupIndices = warnings.map((_, i) => i);  // start with all
+  let activeWarningIndex = null;
 
   // Start the view near actual warning data so polygons/markers are immediately visible.
   const initialMapCenter = (warnings.length > 0)
@@ -301,6 +316,7 @@ function groupWarningsByTime(warnings) {
     return indices.map((i) => {
       const w = warnings[i];
       const base = tierToPolygonColor(w.tier);
+      const isActive = i === activeWarningIndex;
 
       const fill = Highcharts.color
         ? Highcharts.color(base).setOpacity(0.45).get('rgba')
@@ -311,13 +327,37 @@ function groupWarningsByTime(warnings) {
         geometry: w.geometry,   // let Highcharts handle projection
         color: fill,
         borderColor: '#000000',
-        borderWidth: 2.5,
-        custom: { warning: w }
+        borderWidth: isActive ? 4.5 : 2.5,
+        dashStyle: isActive ? 'Solid' : 'Dash',
+        custom: { warning: w, warningIndex: i },
+        events: {
+          click: function () {
+            const warning = this.custom && this.custom.warning;
+            if (!warning) return;
+
+            activeWarningIndex = typeof this.custom.warningIndex === 'number' ? this.custom.warningIndex : null;
+
+            const detailsPanel = document.getElementById('warning-details-panel');
+            const detailsContent = document.getElementById('warning-details-content');
+
+            detailsContent.innerHTML = `
+              <h3 class="warning-details-headline">${escapeHtml(warning.headline || warning.event)}</h3>
+              <p class="warning-details-description">${escapeHtml(warning.description || 'No description available')}</p>
+            `;
+
+            detailsPanel.classList.add('visible');
+            updateWarningSeries(currentGroupIndices);
+          }
+        }
       };
     }).filter(p => p.geometry != null);
   }
 
   function updateWarningSeries(indices) {
+    if (activeWarningIndex != null && !indices.includes(activeWarningIndex)) {
+      activeWarningIndex = null;
+    }
+
     const polygonSeries = chart.series.find(s => s.name === 'Warning Polygons');
     if (polygonSeries) polygonSeries.setData(buildPolygonData(indices), false);
     chart.redraw();
@@ -623,6 +663,16 @@ function groupWarningsByTime(warnings) {
   // =====================================================
   document.getElementById('zoom-in').addEventListener('click', () => chart.mapView.zoomBy(1));
   document.getElementById('zoom-out').addEventListener('click', () => chart.mapView.zoomBy(-1));
+
+  // =====================================================
+  // Warning Details Panel
+  // =====================================================
+  const detailsPanel = document.getElementById('warning-details-panel');
+  const closeDetailsButton = document.getElementById('close-details-button');
+
+  closeDetailsButton.addEventListener('click', () => {
+    detailsPanel.classList.remove('visible');
+  });
 
   // =====================================================
   // Auto-enable warnings layer on load
