@@ -425,11 +425,35 @@ function groupWarningsByTime(warnings) {
       if (layerName === 'warnings') {
         const polySeries = chart.series.find(s => s.name === 'Warning Polygons');
         if (polySeries) polySeries.setVisible(e.target.checked, false);
+
+        // Show/hide the legend suboption
+        const suboption = document.querySelector('.legend-suboption[data-parent="warnings"]');
+        if (suboption) suboption.style.display = e.target.checked ? 'block' : 'none';
+
+        // Show/hide the legend panel (only if "Show Legend" sub-checkbox is checked)
+        const legendPanel = document.getElementById('popup-markers');
+        const subCb = document.querySelector('.legend-subcheckbox[data-target="warnings"]');
+        if (legendPanel) {
+          legendPanel.style.display = (e.target.checked && subCb && subCb.checked) ? 'block' : 'none';
+        }
       }
 
 
       chart.redraw();
       updatePopupPositions();
+    });
+  });
+
+  // "Show Legend" sub-checkbox
+  document.querySelectorAll('.legend-subcheckbox').forEach(subCb => {
+    subCb.addEventListener('change', e => {
+      const target = e.target.dataset.target;
+      if (target === 'warnings') {
+        const legendPanel = document.getElementById('popup-markers');
+        if (legendPanel) {
+          legendPanel.style.display = e.target.checked ? 'block' : 'none';
+        }
+      }
     });
   });
 
@@ -601,22 +625,26 @@ function groupWarningsByTime(warnings) {
   document.getElementById('zoom-out').addEventListener('click', () => chart.mapView.zoomBy(-1));
 
   // =====================================================
-  // Auto-enable both layers after init
+  // Auto-enable warnings layer on load
   // =====================================================
   setTimeout(() => {
     const warningsCb = document.querySelector('.layer-checkbox[data-layer="warnings"]');
-    if (!warningsCb) return;
-
-    warningsCb.checked = true;
-
-    // Set data first before making visible
-    updateWarningSeries(currentGroupIndices);
+    if (warningsCb) warningsCb.checked = true;
 
     const polySeries = chart.series.find(s => s.name === 'Warning Polygons');
-    if (polySeries) polySeries.setVisible(true, false);
+    if (polySeries) {
+      // Load data with no intermediate redraw, then make visible + redraw in one shot
+      polySeries.setData(buildPolygonData(currentGroupIndices), false);
+      polySeries.setVisible(true, true);
+    }
+
+    // Show the legend suboption and the legend panel on initial load
+    const suboption = document.querySelector('.legend-suboption[data-parent="warnings"]');
+    if (suboption) suboption.style.display = 'block';
+    const legendPanel = document.getElementById('popup-markers');
+    if (legendPanel) legendPanel.style.display = 'block';
 
     updatePopupPositions();
-    chart.redraw();
   }, 800);
 
   // =====================================================
@@ -682,24 +710,12 @@ function groupWarningsByTime(warnings) {
       const popup = document.createElement('div');
       popup.id = 'legend-info-popup';
       popup.innerHTML = `
-  <b>Understanding Tornado Warning Severity</b><br/><br/>
-  <div style="display:grid;grid-template-columns:34px 1fr;align-items:center;row-gap:6px;margin-left:-15px;">
-
-    <div style="text-align:center;-webkit-text-stroke:0.3px white;color:#FFA500;font-size:20px;transform:scale(2.2);line-height:20px;">●</div>
-    <div><b>Radar Indicated</b>: Rotation detected on radar. No confirmed tornado on the ground yet.</div>
-
-    <div style="text-align:center;-webkit-text-stroke:0.6px white;color:#FF4500;font-size:22px;transform:scale(1.1);line-height:20px;">▲</div>
-    <div><b>Observed</b>: Tornado reported by trained spotters, emergency managers, or law enforcement.</div>
-
-    <div style="text-align:center;-webkit-text-stroke:0.3px white;color:#CC0000;font-size:21px;transform:scale(2.2);line-height:20px;">■</div>
-    <div><b>Confirmed</b>: A tornado has been confirmed on the ground by NWS assessment.</div>
-
-    <div style="text-align:center;-webkit-text-stroke:0.6px white;color:#8B0000;font-size:22px;transform:scale(1.1);line-height:20px;">⬟</div>
-    <div><b>PDS / Emergency</b>: Particularly Dangerous Situation or Tornado Emergency. Extreme threat to life and property.</div>
-
+  <b>About This Warning Dataset</b><br/><br/>
+  <p style="margin:0 0 10px 0;font-size:13px;line-height:1.5;">All warnings in this dataset are classified as <b>Observed</b> — reported by trained spotters, emergency managers, or law enforcement on the ground.</p>
+  <div style="display:flex;align-items:center;gap:10px;background:rgba(255,69,0,0.15);border:1px solid rgba(255,69,0,0.4);border-radius:6px;padding:8px 10px;">
+    <span style="display:inline-block;width:20px;height:14px;background:rgba(255,69,0,0.55);border:2px solid #000;border-radius:3px;flex-shrink:0;"></span>
+    <span><b>Observed</b>: Higher certainty than a radar-only warning. A tornado was sighted by a credible observer.</span>
   </div>
-  <br/>
-  <em>Note: A single warning polygon may be updated multiple times as conditions evolve.</em>
 `;
 
       Object.assign(popup.style, {

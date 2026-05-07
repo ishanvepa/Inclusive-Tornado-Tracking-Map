@@ -547,6 +547,27 @@ html, body {
   transform: scale(0.8);
 }
 
+/* Colored polygon swatch for tornado severity legend */
+#popup-markers span.swatch {
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  -webkit-text-stroke: 0;
+  transform: none;
+}
+
+/* Small descriptive note beneath the legend items */
+.legend-note {
+  margin: 6px 0 0 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+  font-style: italic;
+}
+
 #layer-info-popup {
   position: absolute;
   background: rgba(35, 35, 35, 0.92) !important;
